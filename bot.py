@@ -16,7 +16,7 @@ logging.basicConfig(
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
 
-async def test(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def bitso(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Make the GET request
         response = requests.get(api_url)
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     start_handler = CommandHandler('start', start)
     application.add_handler(start_handler)
 
-    test_handler = CommandHandler('test', test)
-    application.add_handler(test_handler)
+    bitso_handler = CommandHandler('bitso', bitso)
+    application.add_handler(bitso_handler)
     
     application.run_polling()
