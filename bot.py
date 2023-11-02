@@ -22,27 +22,26 @@ async def test(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response = requests.get(api_url)
 
         # Check if the request was successful (status code 200)
+        matching_objects = []
+        target_books = ['usd_ars', 'usdt_ars']
+
         if response.status_code == 200:
             # Parse and use the response data
             data = response.json()
-            usd_ars = data['payload'][21]
-            del usd_ars['volume']
-            del usd_ars['vwap']
-            del usd_ars['change_24']
-            del usd_ars['rolling_average_change']
-
-            usdt_ars = data['payload'][82]
-            del usdt_ars['volume']
-            del usdt_ars['vwap']
-            del usdt_ars['change_24']
-            del usdt_ars['rolling_average_change']
+            for obj in data.get('payload'):
+                if obj.get("book") in target_books:
+                    del obj["volume"]
+                    del obj["vwap"]
+                    del obj["change_24"]
+                    del obj["rolling_average_change"]
+                    matching_objects.append(obj)
         else:
             print(f"Request failed with status code {response.status_code}")
 
     except requests.exceptions.RequestException as e:
         print("Request exception:", e)
     print(update.effective_chat.username)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=json.dumps([usd_ars,usdt_ars], indent=4))
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=json.dumps(matching_objects, indent=4))
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token(config['TELEGRAM_TOKEN']).build()

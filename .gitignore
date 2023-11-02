@@ -1,6 +1,8 @@
 #python
 lib
 lib/
+lib64
+pyvenv.cfg
 
 # Logs
 logs
