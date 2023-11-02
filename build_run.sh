@@ -20,7 +20,7 @@ echo "Done!"
 
 echo "Installing deps"
 pip3 install python-telegram-bot --upgrade python-dotenv requests
-echo "Done"
+echo "Done!"
 
 echo "Running..."
 python3 bot.py
