@@ -7,5 +7,4 @@ python -m venv .
 source bin/activate
 
 
-pip install python-telegram-bot --upgrade python-dotenv
-pip install requests
+pip install python-telegram-bot --upgrade python-dotenv requests
