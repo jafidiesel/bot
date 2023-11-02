@@ -43,6 +43,26 @@ async def bitso(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(update.effective_chat.username)
     await context.bot.send_message(chat_id=update.effective_chat.id, text=json.dumps(matching_objects, indent=4))
 
+async def dolar(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        URL = 'https://dolarapi.com/v1/dolares'
+
+        data = requests.get(URL).json()
+        dolar_prices = [' Casa - Compra - Venta - Timestamp']
+
+        for obj in data:
+            type = obj.get('casa')
+            buy = obj.get('compra')
+            sell = obj.get('venta')
+            timestamp = obj.get('fechaActualizacion')
+            dolar_prices.append(f"<{type}>  |  ${buy}  |  ${sell}  |  {timestamp}")
+
+    except requests.exceptions.RequestException as e:
+        print("Request exception:", e)
+    print(update.effective_chat.username)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=json.dumps(dolar_prices, indent=4))
+
+
 if __name__ == '__main__':
     application = ApplicationBuilder().token(config['TELEGRAM_TOKEN']).build()
     
@@ -51,5 +71,8 @@ if __name__ == '__main__':
 
     bitso_handler = CommandHandler('bitso', bitso)
     application.add_handler(bitso_handler)
+
+    dolar_handler = CommandHandler('dolar', dolar)
+    application.add_handler(dolar_handler)
     
     application.run_polling()
