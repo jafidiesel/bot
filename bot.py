@@ -73,7 +73,7 @@ async def temp(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except requests.exceptions.RequestException as e:
         print("Request exception:", e)
     print(update.effective_chat.username)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=json.dumps(temperature_cmd, indent=4))
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=json.dumps(temperature_result, indent=4))
 
 async def usdars(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
