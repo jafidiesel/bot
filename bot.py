@@ -1,8 +1,4 @@
-import logging
-import requests
-import json
-from telegram import Update
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
+from telegram.ext import ApplicationBuilder, CommandHandler
 from dotenv import dotenv_values
 config = dotenv_values(".env")
 
