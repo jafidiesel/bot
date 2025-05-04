@@ -14,7 +14,7 @@ async def bitso(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response = requests.get(BITSO_URL)
 
         # Check if the request was successful (status code 200)
-        matching_objects = []
+        formatted_message = []
         target_books = ['usd_ars', 'usdt_ars']
 
         if response.status_code == 200:
@@ -22,15 +22,19 @@ async def bitso(update: Update, context: ContextTypes.DEFAULT_TYPE):
             data = response.json()
             for obj in data.get('payload'):
                 if obj.get("book") in target_books:
-                    del obj["volume"]
-                    del obj["vwap"]
-                    del obj["change_24"]
-                    del obj["rolling_average_change"]
-                    matching_objects.append(obj)
+                    book = obj.get("book")
+                    last = obj.get("last")
+                    low = obj.get("low")
+                    high = obj.get("high")
+                    formatted_message.append(f"#{book} -> _{last}_\n                 low: _{low}_ - high: _{high}_")
         else:
             print(f"Request failed with status code {response.status_code}")
+            formatted_message.append("Error: No se pudo obtener los datos de Bitso.")
 
     except requests.exceptions.RequestException as e:
         print("Request exception:", e)
+        formatted_message.append("Error: Ocurrió un problema al realizar la solicitud.")
+
+    # Send the formatted message
     print(update.effective_chat.username)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=json.dumps(matching_objects, indent=4))
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="\n\n".join(formatted_message), parse_mode="Markdown")
