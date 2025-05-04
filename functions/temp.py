@@ -12,8 +12,8 @@ async def temp(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         print("Raspberry Pi CPU Temperature (millidegrees):", temperature_result)
 
-    except requests.exceptions.RequestException as e:
-        print("Command only valid for Raspberry Pi")
-        print("Request exception:", e)
+    except subprocess.CalledProcessError as e:
+        print("Failed to execute the command. Ensure this is a Raspberry Pi.")
+        print("Subprocess error:", e)
     print(update.effective_chat.username)
     await context.bot.send_message(chat_id=update.effective_chat.id, text=json.dumps(temperature_result, indent=4))
