@@ -1,0 +1,26 @@
+Como servicio systemd (para scripts que deben ejecutarse siempre)
+
+Si necesitas que el script se inicie automáticamente al reiniciar:
+bashsudo nano /etc/systemd/system/mi_script.service
+Contenido del archivo:
+
+[Unit]
+Description=Mi Script Python
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi
+ExecStart=/usr/bin/python3 /ruta/a/tu_script.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+
+Luego:
+
+
+bashsudo systemctl enable mi_script.service
+sudo systemctl start mi_script.service
