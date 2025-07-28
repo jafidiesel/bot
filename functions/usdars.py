@@ -15,22 +15,22 @@ async def usdars(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         float_number = float(string_number)
 
-            # Obtener los datos de la API
-            data = requests.get(DOLLAR_API_URL).json()
-            oficial_dolar = data[0]
-            blue_dolar = data[1]
+        # Obtener los datos de la API
+        data = requests.get(DOLLAR_API_URL).json()
+        oficial_dolar = data[0]
+        blue_dolar = data[1]
 
-            # Formatear los mensajes
-            formatted_message.append(
-                f"#{oficial_dolar.get('casa').capitalize()}\n"
-                f"            -> {float_number:.0f} USD - {float_number * float(oficial_dolar.get('venta')):,.2f} ARS:\n"
-                f"            -> Compra: ${oficial_dolar.get('compra')} | Venta: ${oficial_dolar.get('venta')}"
-            )
-            formatted_message.append(
-                f"#{blue_dolar.get('casa').capitalize()}\n"
-                f"            -> {float_number:.0f} USD - {float_number * float(blue_dolar.get('venta')):,.2f} ARS:\n"
-                f"            -> Compra: ${blue_dolar.get('compra')} | Venta: ${blue_dolar.get('venta')}"
-            )
+        # Formatear los mensajes
+        formatted_message.append(
+            f"#{oficial_dolar.get('casa').capitalize()}\n"
+            f"            -> {float_number:.0f} USD - {float_number * float(oficial_dolar.get('venta')):,.2f} ARS:\n"
+            f"            -> Compra: ${oficial_dolar.get('compra')} | Venta: ${oficial_dolar.get('venta')}"
+        )
+        formatted_message.append(
+            f"#{blue_dolar.get('casa').capitalize()}\n"
+            f"            -> {float_number:.0f} USD - {float_number * float(blue_dolar.get('venta')):,.2f} ARS:\n"
+            f"            -> Compra: ${blue_dolar.get('compra')} | Venta: ${blue_dolar.get('venta')}"
+        )
 
     except (requests.exceptions.RequestException, ValueError) as e:
         print("Exception occurred:", e)
