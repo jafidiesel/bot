@@ -14,8 +14,7 @@ async def arsusd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         float_number = None
         formatted_message = []
 
-        if isinstance(float(string_number), float):
-            float_number = float(string_number)
+        float_number = float(string_number)
 
             # Obtener los datos de la API
             data = requests.get(DOLLAR_API_URL).json()
