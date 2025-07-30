@@ -57,6 +57,12 @@ else
     echo "✅ DOLLAR_BITSO_URL configurado"
 fi
 
+# Verificar clave de OpenWeather
+if ! grep -q "OPENWEATHER_API_KEY=" .env; then
+    echo "❌ Error: OPENWEATHER_API_KEY no encontrado en .env"
+    exit 1
+fi
+
 # Verificar requirements.txt
 if [[ ! -f "requirements.txt" ]]; then
     echo "❌ Error: No se encuentra requirements.txt"

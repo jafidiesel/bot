@@ -26,6 +26,7 @@ from functions.temp import temp
 from functions.usdars import usdars
 from functions.arsusd import arsusd
 from functions.test import test
+import functions.weather as weather
 
 def handle_errors(func):
     """Decorator para manejar errores y enviarlos al usuario"""
@@ -107,76 +108,9 @@ async def debug_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"🐛 Modo debug {status}")
     logging.info(f"Debug mode {status} by user {user_id}")
 
-@handle_errors
-async def start_enhanced(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Función start mejorada con manejo de errores"""
-    await update.message.reply_text(
-        '¡Hola! 👋\n\n'
-        '🔹 /dolar - Precio del dólar\n'
-        '🔹 /bitso - Datos de Bitso\n'
-        '🔹 /temp - Temperatura\n'
-        '🔹 /usdars - USD a ARS\n'
-        '🔹 /arsusd - ARS a USD\n'
-        '🔹 /test - Comando de prueba\n'
-        '🔹 /debug - Activar/desactivar modo debug\n'
-        '🔹 /myid - Obtener tu ID de usuario'
-    )
-
 async def get_my_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Comando temporal para obtener el user ID"""
     await update.message.reply_text(f"Tu user ID es: {update.effective_user.id}")
-
-@handle_errors
-async def dolar_enhanced(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Función dólar mejorada con manejo de errores"""
-    DOLLAR_API_URL = config.get('DOLLAR_API_URL')
-    
-    if not DOLLAR_API_URL:
-        await update.message.reply_text("❌ Error: DOLLAR_API_URL no configurada en .env")
-        return
-    
-    # Usar safe_api_call para obtener datos del dólar
-    dollar_data = await safe_api_call(update, context, DOLLAR_API_URL, "API del Dólar")
-    if dollar_data is None:
-        return
-    
-    try:
-        formatted_message = []
-        
-        # Verificar si la respuesta es una lista o un objeto
-        data_list = dollar_data if isinstance(dollar_data, list) else [dollar_data]
-        
-        for obj in data_list:
-            # Usar get() para evitar KeyError
-            casa = obj.get('casa', 'Desconocido').capitalize()
-            compra = obj.get('compra', 'N/A')
-            venta = obj.get('venta', 'N/A')
-            timestamp = obj.get('fechaActualizacion', '')
-
-            if timestamp:
-                try:
-                    from datetime import datetime
-                    formatted_timestamp = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d/%m/%y %H:%M")
-                except:
-                    formatted_timestamp = timestamp
-            else:
-                formatted_timestamp = "N/A"
-
-            formatted_message.append(
-                f"#{casa}:\n      Compra: ${compra} | Venta: ${venta}\n      Actualizado: {formatted_timestamp}"
-            )
-        
-        if formatted_message:
-            await update.message.reply_text("\n\n".join(formatted_message), parse_mode="Markdown")
-        else:
-            await update.message.reply_text("❌ No se pudieron procesar los datos del dólar")
-        
-    except Exception as e:
-        await update.message.reply_text(
-            f"❌ Error procesando datos del dólar:\n```\n{str(e)}\n```",
-            parse_mode='Markdown'
-        )
-        logging.error(f"Error processing dollar data: {e}", exc_info=True)
 
 
 if __name__ == '__main__':
@@ -203,12 +137,18 @@ if __name__ == '__main__':
 
     test_handler = CommandHandler('test', test)
     application.add_handler(test_handler)
-    
+
+    # Handlers para funciones de weather
+    weather_command_handler = CommandHandler('clima', weather.weather_command)
+    application.add_handler(weather_command_handler)
+
+    # Agregar pronóstico del tiempo
+    weather_command_handler = CommandHandler('pronostico', weather.forecast_command)
+    application.add_handler(weather_command_handler)
+
     # Nuevos handlers con manejo de errores
     application.add_handler(CommandHandler("debug", debug_command))
     application.add_handler(CommandHandler("myid", get_my_id))
-    application.add_handler(CommandHandler("start_enhanced", start_enhanced))
-    application.add_handler(CommandHandler("dolar_enhanced", dolar_enhanced))
     
     logging.info("Bot iniciado correctamente")
     application.run_polling()

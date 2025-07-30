@@ -27,7 +27,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
              "🔹 /dolar - Precio del dólar\n"
              "🔹 /bitso - Datos de Bitso\n"
              "🔹 /temp - Temperatura\n"
-             "🔹 /usdars - USD a ARS\n"
-             "🔹 /arsusd - ARS a USD\n"
-             "🔹 /test - Comando de prueba"
+             "🔹 /usdars - <monto> USD a ARS\n"
+             "🔹 /arsusd - <monto> ARS a USD\n"
+             "🔹 /test - Comando de prueba\n"
+             "🔹 /clima - Información del clima\n"
+             "🔹 /pronostico - Pronóstico del clima"
     )
