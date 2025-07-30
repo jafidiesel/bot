@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Definir la ruta del proyecto
+PROJECT_DIR="/home/pi/git/bot"
+
+# Cambiar al directorio del proyecto
+cd "$PROJECT_DIR"
+
 # Limpiar instalación anterior del virtual environment
 rm -rf bin
 rm -rf include

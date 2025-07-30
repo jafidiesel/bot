@@ -111,6 +111,5 @@ dist
 # TernJS port file
 .tern-port
 
-Scripts/
 .github/
 functions/__pycache__/*
