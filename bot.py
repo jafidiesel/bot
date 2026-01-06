@@ -1,127 +1,122 @@
-import logging
-import requests
-import json
-import subprocess
+from telegram.ext import ApplicationBuilder, CommandHandler
 from telegram import Update
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
+from telegram.ext import ContextTypes
 from dotenv import dotenv_values
+import logging
+import traceback
+import requests
+from functools import wraps
+
 config = dotenv_values(".env")
 
-BITSO_URL=config['DOLLAR_BITSO_URL']
-DOLLAR_API_URL=config['DOLLAR_API_URL']
+# Configurar logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO,
+    handlers=[
+        logging.FileHandler('bot.log'),
+        logging.StreamHandler()
+    ]
+)
 
-#logging.basicConfig(
-#    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-#    level=logging.INFO
-#)
+from functions.start import start
+from functions.bitso import bitso
+from functions.dolar import dolar
+from functions.temp import temp
+from functions.usdars import usdars
+from functions.arsusd import arsusd
+from functions.test import test
+#import functions.weather as weather
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
-
-async def bitso(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        # Make the GET request
-        response = requests.get(BITSO_URL)
-
-        # Check if the request was successful (status code 200)
-        matching_objects = []
-        target_books = ['usd_ars', 'usdt_ars']
-
-        if response.status_code == 200:
-            # Parse and use the response data
-            data = response.json()
-            for obj in data.get('payload'):
-                if obj.get("book") in target_books:
-                    del obj["volume"]
-                    del obj["vwap"]
-                    del obj["change_24"]
-                    del obj["rolling_average_change"]
-                    matching_objects.append(obj)
-        else:
-            print(f"Request failed with status code {response.status_code}")
-
-    except requests.exceptions.RequestException as e:
-        print("Request exception:", e)
-    print(update.effective_chat.username)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=json.dumps(matching_objects, indent=4))
-
-async def dolar(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        data = requests.get(DOLLAR_API_URL).json()
-        dolar_prices = [' Casa - Compra - Venta - Timestamp']
-
-        for obj in data:
-            type = obj.get('casa')
-            buy = obj.get('compra')
-            sell = obj.get('venta')
-            timestamp = obj.get('fechaActualizacion')
-            dolar_prices.append(f"<{type}>  |  ${buy}  |  ${sell}  |  {timestamp}")
-
-    except requests.exceptions.RequestException as e:
-        print("Request exception:", e)
-    print(update.effective_chat.username)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=json.dumps(dolar_prices, indent=4))
-
-async def temp(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        # Read CPU temperature using subprocess
-        temperature_cmd = "vcgencmd measure_temp"
-        temperature_result = subprocess.check_output(temperature_cmd, shell=True).decode("utf-8").strip()
-
-        print("Raspberry Pi CPU Temperature (millidegrees):", temperature_result)
-
-    except requests.exceptions.RequestException as e:
-        print("Request exception:", e)
-    print(update.effective_chat.username)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=json.dumps(temperature_result, indent=4))
-
-async def usdars(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        
-        string_number = context.args[0].replace("/usdars ", "")
-        float_number = None
-        value_in_dolars = ['ARS total => Casa - Compra - Venta']
-
-        if( isinstance(float(string_number), float)):
-            float_number=float(string_number)
-
-            data = requests.get(DOLLAR_API_URL).json()
-            oficial_dolar = data[0]
-            blue_dolar = data[1]
-            value_in_dolars.append(f"{float_number*oficial_dolar.get('venta')} ARS => {oficial_dolar.get('casa')}  |  ${oficial_dolar.get('compra')}  |  ${oficial_dolar.get('venta')}")
-            value_in_dolars.append(f"{float_number*blue_dolar.get('venta')} ARS => {blue_dolar.get('casa')}  |  ${blue_dolar.get('compra')}  |  ${blue_dolar.get('venta')}")
-
-    except requests.exceptions.RequestException as e:
-        print("Request exception:", e)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=json.dumps(value_in_dolars, indent=4))
-
-async def arsusd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        
-        string_number = context.args[0].replace("/arsusd ", "")
-        float_number = None
-        value_in_dolars = ['USD total => Casa - Compra - Venta']
-
-        if( isinstance(float(string_number), float)):
-            float_number=float(string_number)
-
-            data = requests.get(DOLLAR_API_URL).json()
-            oficial_dolar = data[0]
-            blue_dolar = data[1]
-            value_in_dolars.append(f"{float_number/oficial_dolar.get('venta')} ARS => {oficial_dolar.get('casa')}  |  ${oficial_dolar.get('compra')}  |  ${oficial_dolar.get('venta')}")
-            value_in_dolars.append(f"{float_number/blue_dolar.get('venta')} ARS => {blue_dolar.get('casa')}  |  ${blue_dolar.get('compra')}  |  ${blue_dolar.get('venta')}")
-
-    except requests.exceptions.RequestException as e:
-        print("Request exception:", e)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=json.dumps(value_in_dolars, indent=4))
-
-async def test(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def handle_errors(func):
+    """Decorator para manejar errores y enviarlos al usuario"""
+    @wraps(func)
+    async def wrapper(update, context):
+        try:
+            return await func(update, context)
+        except Exception as e:
+            error_msg = f"❌ Error en {func.__name__}:\n```\n{str(e)}\n```"
+            
+            # Si está en modo debug, incluir traceback
+            if context.bot_data.get('debug_mode', False):
+                tb = traceback.format_exc()
+                error_msg += f"\n\nTraceback:\n```\n{tb[:1000]}...\n```" if len(tb) > 1000 else f"\n\nTraceback:\n```\n{tb}\n```"
+            
+            try:
+                await update.message.reply_text(error_msg, parse_mode='Markdown')
+            except:
+                # Fallback si falla el markdown
+                await update.message.reply_text(f"❌ Error en {func.__name__}: {str(e)}")
+            
+            logging.error(f"Error in {func.__name__}: {e}", exc_info=True)
     
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="http://jafibravin.com/cv")
+    return wrapper
+
+async def safe_api_call(update: Update, context: ContextTypes.DEFAULT_TYPE, 
+                       url: str, description: str = "API"):
+    """Función utilitaria para llamadas seguras a APIs"""
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    
+    except requests.exceptions.Timeout:
+        await update.message.reply_text(
+            f"⏱️ Timeout en {description}\nLa API tardó demasiado en responder"
+        )
+        logging.warning(f"Timeout en {description}: {url}")
+        return None
+    
+    except requests.exceptions.ConnectionError:
+        await update.message.reply_text(
+            f"🔌 Error de conexión con {description}\nVerifica la conexión a internet"
+        )
+        logging.error(f"Connection error en {description}: {url}")
+        return None
+    
+    except requests.exceptions.HTTPError as e:
+        error_text = e.response.text[:200] if hasattr(e, 'response') and e.response else str(e)
+        await update.message.reply_text(
+            f"🚫 Error HTTP {e.response.status_code if hasattr(e, 'response') else 'Unknown'} en {description}\n{error_text}"
+        )
+        logging.error(f"HTTP error en {description}: {e}")
+        return None
+    
+    except Exception as e:
+        await update.message.reply_text(
+            f"❌ Error inesperado en {description}:\n```\n{str(e)}\n```",
+            parse_mode='Markdown'
+        )
+        logging.error(f"Unexpected error en {description}: {e}")
+        return None
+
+@handle_errors
+async def debug_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Comando para activar/desactivar modo debug"""
+    user_id = update.effective_user.id
+    
+    # Lista de usuarios autorizados (CAMBIAR POR TU USER ID REAL)
+    authorized_users = [123456789]  # ⚠️ CAMBIAR ESTE NÚMERO
+    if user_id not in authorized_users:
+        await update.message.reply_text("❌ No autorizado para usar este comando")
+        return
+    
+    current_debug = context.bot_data.get('debug_mode', False)
+    context.bot_data['debug_mode'] = not current_debug
+    
+    status = "activado" if context.bot_data['debug_mode'] else "desactivado"
+    await update.message.reply_text(f"🐛 Modo debug {status}")
+    logging.info(f"Debug mode {status} by user {user_id}")
+
+async def get_my_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Comando temporal para obtener el user ID"""
+    await update.message.reply_text(f"Tu user ID es: {update.effective_user.id}")
+
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token(config['TELEGRAM_TOKEN']).build()
     
+    # Handlers originales (con funciones del directorio functions/)
     start_handler = CommandHandler('start', start)
     application.add_handler(start_handler)
 
@@ -142,5 +137,18 @@ if __name__ == '__main__':
 
     test_handler = CommandHandler('test', test)
     application.add_handler(test_handler)
+
+    # Handlers para funciones de weather
+    #weather_command_handler = CommandHandler('clima', weather.weather_command)
+    #application.add_handler(weather_command_handler)
+
+    # Agregar pronóstico del tiempo
+    #weather_command_handler = CommandHandler('pronostico', weather.forecast_command)
+    #application.add_handler(weather_command_handler)
+
+    # Nuevos handlers con manejo de errores
+    application.add_handler(CommandHandler("debug", debug_command))
+    application.add_handler(CommandHandler("myid", get_my_id))
     
+    logging.info("Bot iniciado correctamente")
     application.run_polling()

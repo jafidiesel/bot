@@ -1,0 +1,21 @@
+[Unit]
+Description=Bot Script Python
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/git/bot
+ExecStart=/bin/bash /home/pi/git/bot/build_run_silent.sh
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+# Variables de entorno
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

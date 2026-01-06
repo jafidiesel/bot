@@ -1,0 +1,13 @@
+[Unit]
+Description=Bot Script Python
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/git/bot
+ExecStart=/home/pi/git/bot/build_run_silent.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
