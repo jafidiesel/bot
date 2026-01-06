@@ -15,13 +15,13 @@ echo "2. Deshabilitando servicio con configuración incorrecta..."
 sudo systemctl disable bot_script.service 2>/dev/null || echo "   Servicio no estaba habilitado"
 
 echo "3. Copiando nueva configuración..."
-sudo cp telegram-bot.service /etc/systemd/system/
+sudo cp bot_script.service /etc/systemd/system/
 
 echo "4. Recargando configuración de systemd..."
 sudo systemctl daemon-reload
 
 echo "5. Habilitando nuevo servicio..."
-sudo systemctl enable telegram-bot.service
+sudo systemctl enable bot_script.service
 
 echo "6. Verificando configuración del archivo .env..."
 if [[ ! -f ".env" ]]; then
@@ -42,13 +42,13 @@ echo ""
 echo "=== Reparación completada ==="
 echo ""
 echo "Para iniciar el servicio:"
-echo "  sudo systemctl start telegram-bot"
+echo "  sudo systemctl start bot_script"
 echo ""
 echo "Para verificar estado:"
-echo "  sudo systemctl status telegram-bot"
+echo "  sudo systemctl status bot_script"
 echo ""
 echo "Para ver logs:"
-echo "  sudo journalctl -u telegram-bot -f"
+echo "  sudo journalctl -u bot_script -f"
 echo ""
 echo "Para detener el servicio anterior (si sigue activo):"
 echo "  sudo systemctl stop bot_script"

@@ -26,7 +26,7 @@ from functions.temp import temp
 from functions.usdars import usdars
 from functions.arsusd import arsusd
 from functions.test import test
-import functions.weather as weather
+#import functions.weather as weather
 
 def handle_errors(func):
     """Decorator para manejar errores y enviarlos al usuario"""
@@ -139,12 +139,12 @@ if __name__ == '__main__':
     application.add_handler(test_handler)
 
     # Handlers para funciones de weather
-    weather_command_handler = CommandHandler('clima', weather.weather_command)
-    application.add_handler(weather_command_handler)
+    #weather_command_handler = CommandHandler('clima', weather.weather_command)
+    #application.add_handler(weather_command_handler)
 
     # Agregar pronóstico del tiempo
-    weather_command_handler = CommandHandler('pronostico', weather.forecast_command)
-    application.add_handler(weather_command_handler)
+    #weather_command_handler = CommandHandler('pronostico', weather.forecast_command)
+    #application.add_handler(weather_command_handler)
 
     # Nuevos handlers con manejo de errores
     application.add_handler(CommandHandler("debug", debug_command))
