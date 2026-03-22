@@ -1,7 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 import requests
-import json
 from dotenv import dotenv_values
 config = dotenv_values(".env")
 
@@ -9,31 +8,31 @@ BITSO_URL=config['DOLLAR_BITSO_URL']
 
 
 async def bitso(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    formatted_message = []
     try:
         # Make the GET request
-        response = requests.get(BITSO_URL)
+        response = requests.get(BITSO_URL, timeout=10)
+        response.raise_for_status()
 
-        # Check if the request was successful (status code 200)
-        formatted_message = []
         target_books = ['usd_ars', 'usdt_ars']
+        data = response.json()
+        payload = data.get('payload', [])
 
-        if response.status_code == 200:
-            # Parse and use the response data
-            data = response.json()
-            for obj in data.get('payload'):
-                if obj.get("book") in target_books:
-                    book = obj.get("book")
-                    last = obj.get("last")
-                    low = obj.get("low")
-                    high = obj.get("high")
-                    formatted_message.append(f"#{book} -> _{last}_\n                 low: _{low}_ - high: _{high}_")
-        else:
-            print(f"Request failed with status code {response.status_code}")
-            formatted_message.append("Error: No se pudo obtener los datos de Bitso.")
+        # Parse and use the response data
+        for obj in payload:
+            if obj.get("book") in target_books:
+                book = obj.get("book")
+                last = obj.get("last")
+                low = obj.get("low")
+                high = obj.get("high")
+                formatted_message.append(f"#{book} -> _{last}_\n                 low: _{low}_ - high: _{high}_")
 
-    except requests.exceptions.RequestException as e:
+        if not formatted_message:
+            formatted_message = ["Error: No se encontraron datos para los pares esperados en Bitso."]
+
+    except (requests.exceptions.RequestException, ValueError, TypeError) as e:
         print("Request exception:", e)
-        formatted_message.append("Error: Ocurrió un problema al realizar la solicitud.")
+        formatted_message = ["Error: Ocurrió un problema al realizar la solicitud."]
 
     # Send the formatted message
     print(update.effective_chat.username)

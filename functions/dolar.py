@@ -9,25 +9,32 @@ DOLLAR_API_URL=config['DOLLAR_API_URL']
 
 
 async def dolar(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    formatted_message = []
     try:
-        data = requests.get(DOLLAR_API_URL).json()
+        response = requests.get(DOLLAR_API_URL, timeout=10)
+        response.raise_for_status()
+        data = response.json()
 
-        formatted_message = []
         for obj in data:
-            type = obj.get('casa').capitalize()
+            rate_type = str(obj.get('casa', 'desconocido')).capitalize()
             buy = obj.get('compra')
             sell = obj.get('venta')
             timestamp = obj.get('fechaActualizacion')
 
-            # Formatear el timestamp
-            formatted_timestamp = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d/%m/%y %H:%M")
+            # Formatear el timestamp cuando exista y sea valido.
+            formatted_timestamp = "N/A"
+            if timestamp:
+                formatted_timestamp = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d/%m/%y %H:%M")
 
             # Formatear el mensaje
             formatted_message.append(
-                f"#{type}:\n      Compra: ${buy} | Venta: ${sell}\n      Actualizado: {formatted_timestamp}"
+                f"#{rate_type}:\n      Compra: ${buy} | Venta: ${sell}\n      Actualizado: {formatted_timestamp}"
             )
 
-    except requests.exceptions.RequestException as e:
+        if not formatted_message:
+            formatted_message = ["Error: La API no devolvio datos de cotizaciones."]
+
+    except (requests.exceptions.RequestException, ValueError, TypeError) as e:
         print("Request exception:", e)
         formatted_message = ["Error: Ocurrió un problema al realizar la solicitud."]
 

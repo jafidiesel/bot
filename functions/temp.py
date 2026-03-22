@@ -1,19 +1,16 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 import subprocess
-import json
-import requests
 
 async def temp(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    temperature_result = "Error: No se pudo obtener la temperatura en este entorno."
     try:
-        # Read CPU temperature using subprocess
-        temperature_cmd = "vcgencmd measure_temp"
-        temperature_result = subprocess.check_output(temperature_cmd, shell=True).decode("utf-8").strip()
+        # Works on Raspberry Pi systems where vcgencmd is available.
+        temperature_result = subprocess.check_output(["vcgencmd", "measure_temp"], text=True).strip()
 
-        print("Raspberry Pi CPU Temperature (millidegrees):", temperature_result)
-
-    except subprocess.CalledProcessError as e:
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
         print("Failed to execute the command. Ensure this is a Raspberry Pi.")
         print("Subprocess error:", e)
+
     print(update.effective_chat.username)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=json.dumps(temperature_result, indent=4))
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=temperature_result)

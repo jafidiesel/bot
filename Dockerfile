@@ -1,18 +1,25 @@
 # syntax=docker/dockerfile:1
 
-FROM python:3.9-slim
+FROM python:3.11-slim
 
-# Establecer el directorio de trabajo
+ENV PYTHONDONTWRITEBYTECODE=1 \
+	PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
-# Copiar los archivos necesarios
+# Install dependencies first to maximize layer cache reuse.
+COPY requirements.txt ./
+RUN pip install --no-cache-dir --upgrade pip \
+	&& pip install --no-cache-dir -r requirements.txt
+
+# Copy application source.
 COPY bot.py ./
 COPY functions ./functions
-COPY requirements.txt ./
-COPY .env ./
 
-# Instalar las dependencias
-RUN pip install --no-cache-dir -r requirements.txt
+# Run as non-root user.
+RUN useradd --create-home --shell /usr/sbin/nologin appuser \
+	&& chown -R appuser:appuser /app
+USER appuser
 
-# Comando para ejecutar el bot
+# Pass environment variables at runtime (for example: --env-file .env).
 CMD ["python", "bot.py"]
