@@ -10,22 +10,18 @@
 
 SERVICE_NAME=“bot_script”
 SERVICE_FILE=”/etc/systemd/system/${SERVICE_NAME}.service”
-BOT_DIR=”/home/pi/git/bot”
+BOT_DIR=”/home/jafidiesel/git/bot”
 VENV_DIR=”${BOT_DIR}/venv”
 PYTHON=”${VENV_DIR}/bin/python3”
 
-# Colores para output
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC=’\033[0m’ # No Color
+RED=’\033[0;31m’
+GREEN=’\033[0;32m’
+YELLOW=’\033[1;33m’
+NC=’\033[0m’
 
 print_ok()   { echo -e “${GREEN}[OK]${NC} $1”; }
 print_err()  { echo -e “${RED}[ERROR]${NC} $1”; }
 print_info() { echo -e “${YELLOW}[INFO]${NC} $1”; }
-
-# ── Verificaciones previas ──────────────────────────────────
 
 check_root() {
 if [ “$EUID” -ne 0 ]; then
@@ -51,8 +47,6 @@ print_info “  nano ${BOT_DIR}/.env”
 exit 1
 fi
 }
-
-# ── Instalar: crea venv, instala deps y registra el servicio ─
 
 cmd_install() {
 check_root “install”
@@ -89,8 +83,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=pi
-Group=pi
+User=jafidiesel
+Group=jafidiesel
 WorkingDirectory=${BOT_DIR}
 ExecStart=${PYTHON} ${BOT_DIR}/bot.py
 Restart=always
@@ -121,16 +115,16 @@ fi
 
 }
 
-# ── Comandos de control ─────────────────────────────────────
-
 cmd_start() {
 check_root “start”
 print_info “Iniciando el bot…”
 systemctl start “$SERVICE_NAME”
 sleep 1
-systemctl is-active –quiet “$SERVICE_NAME”   
-&& print_ok “Bot iniciado.”   
-|| print_err “No se pudo iniciar. Revisá: sudo ./manage_bot.sh logs”
+if systemctl is-active –quiet “$SERVICE_NAME”; then
+print_ok “Bot iniciado.”
+else
+print_err “No se pudo iniciar. Revisá: sudo ./manage_bot.sh logs”
+fi
 }
 
 cmd_stop() {
@@ -145,9 +139,11 @@ check_root “restart”
 print_info “Reiniciando el bot…”
 systemctl restart “$SERVICE_NAME”
 sleep 1
-systemctl is-active –quiet “$SERVICE_NAME”   
-&& print_ok “Bot reiniciado correctamente.”   
-|| print_err “No se pudo reiniciar. Revisá: sudo ./manage_bot.sh logs”
+if systemctl is-active –quiet “$SERVICE_NAME”; then
+print_ok “Bot reiniciado correctamente.”
+else
+print_err “No se pudo reiniciar. Revisá: sudo ./manage_bot.sh logs”
+fi
 }
 
 cmd_status() {
@@ -171,8 +167,6 @@ rm -f “$SERVICE_FILE”
 systemctl daemon-reload
 print_ok “Servicio desinstalado. El venv y el código no fueron tocados.”
 }
-
-# ── Main ────────────────────────────────────────────────────
 
 case “$1” in
 install)   cmd_install ;;
