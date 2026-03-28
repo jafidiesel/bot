@@ -4,40 +4,40 @@
 
 # Uso: ./manage_bot.sh [install|start|stop|restart|status|logs|uninstall]
 
-SERVICE_NAME=“bot_script”
-SERVICE_FILE=”/etc/systemd/system/${SERVICE_NAME}.service”
-BOT_DIR=”/home/jafidiesel/git/bot”
-VENV_DIR=”${BOT_DIR}/venv”
-PYTHON=”${VENV_DIR}/bin/python3”
+SERVICE_NAME="bot_script"
+SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
+BOT_DIR="/home/jafidiesel/git/bot"
+VENV_DIR="${BOT_DIR}/venv"
+PYTHON="${VENV_DIR}/bin/python3"
 
-print_ok()   { echo “[OK] $1”; }
-print_err()  { echo “[ERROR] $1”; }
-print_info() { echo “[INFO] $1”; }
+print_ok()   { echo "[OK] $1"; }
+print_err()  { echo "[ERROR] $1"; }
+print_info() { echo "[INFO] $1"; }
 
 check_root() {
-if [ “$EUID” -ne 0 ]; then
-print_err “Requiere root. Usa: sudo ./manage_bot.sh $1”
+if [ "$EUID" -ne 0 ]; then
+print_err "Requiere root. Usa: sudo ./manage_bot.sh $1"
 exit 1
 fi
 }
 
 check_bot_dir() {
-if [ ! -d “$BOT_DIR” ]; then
-print_err “No se encontro el directorio: $BOT_DIR”
+if [ ! -d "$BOT_DIR" ]; then
+print_err "No se encontro el directorio: $BOT_DIR"
 exit 1
 fi
 }
 
 check_env_file() {
-if [ ! -f “${BOT_DIR}/.env” ]; then
-print_err “No existe .env en $BOT_DIR”
-print_info “Copia .env.example a .env y completa tus tokens”
+if [ ! -f "${BOT_DIR}/.env" ]; then
+print_err "No existe .env en $BOT_DIR"
+print_info "Copia .env.example a .env y completa tus tokens"
 exit 1
 fi
 }
 
 cmd_install() {
-check_root “install”
+check_root "install"
 check_bot_dir
 check_env_file
 
@@ -103,59 +103,59 @@ fi
 }
 
 cmd_start() {
-check_root “start”
-print_info “Iniciando el bot…”
-systemctl start “$SERVICE_NAME”
+check_root "start"
+print_info "Iniciando el bot..."
+systemctl start "$SERVICE_NAME"
 sleep 1
-if systemctl is-active –quiet “$SERVICE_NAME”; then
-print_ok “Bot iniciado.”
+if systemctl is-active –quiet "$SERVICE_NAME"; then
+print_ok "Bot iniciado."
 else
-print_err “No se pudo iniciar. Revisa: sudo ./manage_bot.sh logs”
+print_err "No se pudo iniciar. Revisa: sudo ./manage_bot.sh logs"
 fi
 }
 
 cmd_stop() {
-check_root “stop”
-print_info “Deteniendo el bot…”
-systemctl stop “$SERVICE_NAME”
-print_ok “Bot detenido.”
+check_root "stop"
+print_info "Deteniendo el bot..."
+systemctl stop "$SERVICE_NAME"
+print_ok "Bot detenido."
 }
 
 cmd_restart() {
-check_root “restart”
-print_info “Reiniciando el bot…”
-systemctl restart “$SERVICE_NAME”
+check_root "restart"
+print_info "Reiniciando el bot..."
+systemctl restart "$SERVICE_NAME"
 sleep 1
-if systemctl is-active –quiet “$SERVICE_NAME”; then
-print_ok “Bot reiniciado correctamente.”
+if systemctl is-active –quiet "$SERVICE_NAME"; then
+print_ok "Bot reiniciado correctamente."
 else
-print_err “No se pudo reiniciar. Revisa: sudo ./manage_bot.sh logs”
+print_err "No se pudo reiniciar. Revisa: sudo ./manage_bot.sh logs"
 fi
 }
 
 cmd_status() {
-echo “”
-systemctl status “$SERVICE_NAME” –no-pager
-echo “”
+echo ""
+systemctl status "$SERVICE_NAME" –no-pager
+echo ""
 }
 
 cmd_logs() {
-print_info “Mostrando ultimas 50 lineas de log (Ctrl+C para salir)…”
-echo “”
-journalctl -u “$SERVICE_NAME” -n 50 -f
+print_info "Mostrando ultimas 50 lineas de log (Ctrl+C para salir)"
+echo ""
+journalctl -u "$SERVICE_NAME" -n 50 -f
 }
 
 cmd_uninstall() {
-check_root “uninstall”
-print_info “Desinstalando el servicio…”
-systemctl stop “$SERVICE_NAME” 2>/dev/null
-systemctl disable “$SERVICE_NAME” 2>/dev/null
-rm -f “$SERVICE_FILE”
+check_root "uninstall"
+print_info "Desinstalando el servicio..."
+systemctl stop "$SERVICE_NAME" 2>/dev/null
+systemctl disable "$SERVICE_NAME" 2>/dev/null
+rm -f "$SERVICE_FILE"
 systemctl daemon-reload
-print_ok “Servicio desinstalado. El venv y el codigo no fueron tocados.”
+print_ok "Servicio desinstalado. El venv y el codigo no fueron tocados."
 }
 
-case “$1” in
+case "$1" in
 install)   cmd_install ;;
 start)     cmd_start ;;
 stop)      cmd_stop ;;
@@ -164,17 +164,17 @@ status)    cmd_status ;;
 logs)      cmd_logs ;;
 uninstall) cmd_uninstall ;;
 *)
-echo “”
-echo “Uso: $0 {install|start|stop|restart|status|logs|uninstall}”
-echo “”
-echo “  install    - Crea el venv, instala deps y registra el servicio”
-echo “  start      - Inicia el bot”
-echo “  stop       - Detiene el bot”
-echo “  restart    - Reinicia el bot”
-echo “  status     - Muestra el estado del servicio”
-echo “  logs       - Muestra los logs en tiempo real”
-echo “  uninstall  - Elimina el servicio de systemd”
-echo “”
+echo ""
+echo "Uso: $0 {install|start|stop|restart|status|logs|uninstall}"
+echo ""
+echo "  install    - Crea el venv, instala deps y registra el servicio"
+echo "  start      - Inicia el bot"
+echo "  stop       - Detiene el bot"
+echo "  restart    - Reinicia el bot"
+echo "  status     - Muestra el estado del servicio"
+echo "  logs       - Muestra los logs en tiempo real"
+echo "  uninstall  - Elimina el servicio de systemd"
+echo ""
 exit 1
 ;;
 esac
