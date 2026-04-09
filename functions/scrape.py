@@ -55,7 +55,7 @@ async def scrape(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         if summary_html:
             root = fromstring(summary_html)
-            text_content = root.text_content
+            text_content = root.text_content()
         else:
             text_content = ""
 
