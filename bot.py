@@ -26,6 +26,7 @@ from functions.temp import temp
 from functions.usdars import usdars
 from functions.arsusd import arsusd
 from functions.test import test
+from functions.scrape import scrape
 #import functions.weather as weather
 
 def handle_errors(func):
@@ -137,6 +138,9 @@ if __name__ == '__main__':
 
     test_handler = CommandHandler('test', test)
     application.add_handler(test_handler)
+
+    scrape_handler = CommandHandler('scrape', scrape)
+    application.add_handler(scrape_handler)
 
     # Handlers para funciones de weather
     #weather_command_handler = CommandHandler('clima', weather.weather_command)
