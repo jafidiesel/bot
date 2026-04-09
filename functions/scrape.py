@@ -2,7 +2,9 @@ from telegram import Update
 from telegram.ext import ContextTypes
 import requests
 import logging
+import traceback
 from readability import Document
+from lxml.html import fromstring
 from urllib.parse import urlparse
 
 logging.basicConfig(level=logging.INFO)
@@ -49,7 +51,13 @@ async def scrape(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         doc = Document(response.text)
         title = doc.title() or "Sin título"
-        text_content = doc.summary(text_content=True)
+        summary_html = doc.summary()
+        
+        if summary_html:
+            root = fromstring(summary_html)
+            text_content = root.text_content
+        else:
+            text_content = ""
 
         if not text_content or len(text_content.strip()) < 50:
             await update.message.reply_text(
@@ -74,5 +82,15 @@ async def scrape(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except requests.exceptions.HTTPError as e:
         await update.message.reply_text(f"🚫 Error HTTP {e.response.status_code}")
     except Exception as e:
-        logger.error(f"Scrape error: {e}")
-        await update.message.reply_text(f"❌ Error al procesar la página: {str(e)}")
+        tb = traceback.format_exc()
+        logger.error(f"Scrape error for {url}: {e}\n{tb}")
+        
+        debug_mode = context.bot_data.get('debug_mode', False)
+        error_msg = f"❌ Error al procesar la página:\n"
+        error_msg += f"URL: {url}\n"
+        error_msg += f"Error: {type(e).__name__}: {str(e)}"
+        
+        if debug_mode:
+            error_msg += f"\n\n```\n{tb}\n```"
+        
+        await update.message.reply_text(error_msg, parse_mode='Markdown' if debug_mode else None)
