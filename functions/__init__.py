@@ -2,6 +2,7 @@ from functions.dolar import dolar
 from functions.euro import euro
 from functions.temp import temp
 from functions.usdars import usdars
+from functions.eurars import eurars
 from functions.arsusd import arsusd
 from functions.test import test
 from functions.start import start
