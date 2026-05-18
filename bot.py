@@ -98,8 +98,8 @@ async def debug_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Comando para activar/desactivar modo debug"""
     user_id = update.effective_user.id
     
-    # Lista de usuarios autorizados (CAMBIAR POR TU USER ID REAL)
-    authorized_users = [123456789]  # ⚠️ CAMBIAR ESTE NÚMERO
+    # Lista de usuarios autorizados
+    authorized_users = [71870097]
     if user_id not in authorized_users:
         await update.message.reply_text("❌ No autorizado para usar este comando")
         return
