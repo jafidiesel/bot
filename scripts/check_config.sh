@@ -46,6 +46,17 @@ else
     echo "✅ DOLLAR_API_URL configurado"
 fi
 
+if ! grep -q "EURO_API_URL=" .env; then
+    echo "❌ Error: EURO_API_URL no encontrado en .env"
+    exit 1
+fi
+
+if grep -q "TU_URL_API_EURO_AQUI" .env; then
+    echo "⚠️  Advertencia: EURO_API_URL aún no configurado"
+else
+    echo "✅ EURO_API_URL configurado"
+fi
+
 if ! grep -q "DOLLAR_BITSO_URL=" .env; then
     echo "❌ Error: DOLLAR_BITSO_URL no encontrado en .env"
     exit 1
@@ -78,7 +89,7 @@ fi
 echo "✅ Directorio functions/ encontrado"
 
 # Verificar archivos de funciones
-required_functions=("start.py" "dolar.py" "bitso.py" "temp.py" "usdars.py" "arsusd.py" "test.py")
+required_functions=("start.py" "dolar.py" "euro.py" "bitso.py" "temp.py" "usdars.py" "arsusd.py" "test.py")
 for func in "${required_functions[@]}"; do
     if [[ ! -f "functions/$func" ]]; then
         echo "❌ Error: No se encuentra functions/$func"

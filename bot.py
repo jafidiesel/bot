@@ -22,6 +22,7 @@ logging.basicConfig(
 from functions.start import start
 from functions.bitso import bitso
 from functions.dolar import dolar
+from functions.euro import euro
 from functions.temp import temp
 from functions.usdars import usdars
 from functions.arsusd import arsusd
@@ -126,6 +127,9 @@ if __name__ == '__main__':
 
     dolar_handler = CommandHandler('dolar', dolar)
     application.add_handler(dolar_handler)
+
+    euro_handler = CommandHandler('euro', euro)
+    application.add_handler(euro_handler)
 
     temp_handler = CommandHandler('temp', temp)
     application.add_handler(temp_handler)

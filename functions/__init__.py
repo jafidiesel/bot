@@ -1,4 +1,5 @@
 from functions.dolar import dolar
+from functions.euro import euro
 from functions.temp import temp
 from functions.usdars import usdars
 from functions.arsusd import arsusd

@@ -25,6 +25,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text="¡Hola! 👋 Soy tu bot de información financiera.\n\n"
              "Comandos disponibles:\n"
              "🔹 /dolar - Precio del dólar\n"
+             "🔹 /euro - Precio del euro\n"
              "🔹 /bitso - Datos de Bitso\n"
              "🔹 /temp - Temperatura\n"
              "🔹 /usdars - <monto> USD a ARS\n"
