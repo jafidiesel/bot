@@ -19,6 +19,7 @@ Este bot de Telegram proporciona información financiera (dólar, Bitso, convers
 ### ✅ Comandos Mejorados
 - `/start` - Menú principal mejorado
 - `/dolar` - Información del dólar con manejo de errores
+- `/euro` - Información del euro con manejo de errores
 - `/bitso` - Datos de Bitso con validación robusta
 - `/debug` - Activar/desactivar modo debug (solo administradores)
 - `/myid` - Obtener tu ID de usuario de Telegram
@@ -29,6 +30,7 @@ Este bot de Telegram proporciona información financiera (dólar, Bitso, convers
 ```env
 TELEGRAM_TOKEN=tu_token_de_botfather_aqui
 DOLLAR_API_URL=https://api.ejemplo.com/dolar
+EURO_API_URL=https://dolarapi.com/v1/cotizaciones/eur
 DOLLAR_BITSO_URL=https://api.bitso.com/v3/ticker
 ```
 
@@ -95,6 +97,7 @@ cat bot.log                           # Log del bot
 
 ### Error: "API URL no configurada"
 - Verificar que `DOLLAR_API_URL` y `DOLLAR_BITSO_URL` están en `.env`
+- Verificar que `EURO_API_URL` también está en `.env`
 - Verificar que las URLs son válidas
 
 ### Error: "No autorizado para usar comando debug"
@@ -129,6 +132,7 @@ bot/
 └── functions/               # Funciones individuales mejoradas
     ├── start.py             # Comando start mejorado
     ├── dolar.py             # Comando dólar con manejo de errores
+    ├── euro.py              # Comando euro con manejo de errores
     ├── bitso.py             # Comando bitso con validación
     ├── temp.py              # Comando temperatura
     ├── usdars.py            # Conversión USD a ARS
