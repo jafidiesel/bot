@@ -4,6 +4,7 @@ from functions.temp import temp
 from functions.usdars import usdars
 from functions.eurars import eurars
 from functions.arsusd import arsusd
+from functions.arseur import arseur
 from functions.test import test
 from functions.start import start
 #from functions.weather import forecast_command, weather_command

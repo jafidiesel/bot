@@ -27,6 +27,7 @@ from functions.temp import temp
 from functions.usdars import usdars
 from functions.eurars import eurars
 from functions.arsusd import arsusd
+from functions.arseur import arseur
 from functions.test import test
 from functions.scrape import scrape
 #import functions.weather as weather
@@ -143,6 +144,9 @@ if __name__ == '__main__':
 
     arsusd_handler = CommandHandler('arsusd', arsusd)
     application.add_handler(arsusd_handler)
+
+    arseur_handler = CommandHandler('arseur', arseur)
+    application.add_handler(arseur_handler)
 
     test_handler = CommandHandler('test', test)
     application.add_handler(test_handler)
