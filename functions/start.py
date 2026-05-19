@@ -31,6 +31,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
              "🔹 /usdars - <monto> USD a ARS\n"
              "🔹 /eurars - <monto> EUR a ARS\n"
              "🔹 /arsusd - <monto> ARS a USD\n"
+             "🔹 /arseur - <monto> ARS a EUR\n"
              "🔹 /test - Comando de prueba\n"
              "🔹 /clima - Información del clima\n"
              "🔹 /pronostico - Pronóstico del clima"

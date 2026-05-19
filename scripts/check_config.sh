@@ -89,7 +89,7 @@ fi
 echo "✅ Directorio functions/ encontrado"
 
 # Verificar archivos de funciones
-required_functions=("start.py" "dolar.py" "euro.py" "bitso.py" "temp.py" "usdars.py" "eurars.py" "arsusd.py" "test.py")
+required_functions=("start.py" "dolar.py" "euro.py" "bitso.py" "temp.py" "usdars.py" "eurars.py" "arsusd.py" "arseur.py" "test.py")
 for func in "${required_functions[@]}"; do
     if [[ ! -f "functions/$func" ]]; then
         echo "❌ Error: No se encuentra functions/$func"
