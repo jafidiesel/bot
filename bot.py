@@ -32,6 +32,7 @@ from functions.arseur import arseur
 from functions.test import test
 from functions.scrape import scrape
 from functions.transcribe import transcribe_voice
+from functions.status import status, set_bot_start_time
 #import functions.weather as weather
 
 def handle_errors(func):
@@ -170,6 +171,9 @@ async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYP
 if __name__ == '__main__':
     application = ApplicationBuilder().token(config['TELEGRAM_TOKEN']).build()
     
+    # Initialize bot start time
+    set_bot_start_time()
+    
     # Handlers originales (con funciones del directorio functions/)
     start_handler = CommandHandler('start', start)
     application.add_handler(start_handler)
@@ -215,6 +219,7 @@ if __name__ == '__main__':
     # Nuevos handlers con manejo de errores
     application.add_handler(CommandHandler("debug", debug_command))
     application.add_handler(CommandHandler("myid", get_my_id))
+    application.add_handler(CommandHandler("status", status))
     
     # Handler para transcribir mensajes de voz
     voice_handler = MessageHandler(filters.VOICE, handle_voice_message)

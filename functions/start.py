@@ -33,6 +33,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
              "🔹 /arsusd - <monto> ARS a USD\n"
              "🔹 /arseur - <monto> ARS a EUR\n"
              "🔹 /test - Comando de prueba\n"
+             "🔹 /status - Estado del bot y sistema 📊\n"
              "🔹 /clima - Información del clima\n"
              "🔹 /pronostico - Pronóstico del clima\n\n"
              "📝 Características adicionales:\n"
