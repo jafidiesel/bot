@@ -3,3 +3,5 @@ python-dotenv
 requests
 datetime
 readability-lxml
+vosk
+pydub

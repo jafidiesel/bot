@@ -1,10 +1,11 @@
-from telegram.ext import ApplicationBuilder, CommandHandler
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 from telegram import Update
 from telegram.ext import ContextTypes
 from dotenv import dotenv_values
 import logging
 import traceback
 import requests
+import os
 from functools import wraps
 
 config = dotenv_values(".env")
@@ -30,6 +31,19 @@ from functions.arsusd import arsusd
 from functions.arseur import arseur
 from functions.test import test
 from functions.scrape import scrape
+from functions.status import status, set_bot_start_time
+
+# Try to import transcription feature (optional - may fail on some systems)
+TRANSCRIBE_AVAILABLE = False
+try:
+    from functions.transcribe import transcribe_voice
+    TRANSCRIBE_AVAILABLE = True
+    logging.info("Transcription feature loaded successfully")
+except ImportError as e:
+    logging.warning(f"Transcription feature not available: {e}")
+except Exception as e:
+    logging.warning(f"Could not load transcription (Vosk issue): {e}")
+
 #import functions.weather as weather
 
 def handle_errors(func):
@@ -116,9 +130,73 @@ async def get_my_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Comando temporal para obtener el user ID"""
     await update.message.reply_text(f"Tu user ID es: {update.effective_user.id}")
 
+@handle_errors
+async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handler para transcribir mensajes de voz usando Vosk"""
+    
+    if not TRANSCRIBE_AVAILABLE:
+        await update.message.reply_text(
+            "❌ Transcripción no disponible\n\n"
+            "La función de transcripción está deshabilitada en este bot.\n"
+            "Esto puede deberse a:\n"
+            "- Vosk no está instalado\n"
+            "- El modelo de Spanish no está descargado\n"
+            "- Problema de compatibilidad en tu sistema"
+        )
+        logging.warning(f"Transcription requested but not available for user {update.effective_user.id}")
+        return
+    
+    try:
+        # Send processing message
+        processing_msg = await update.message.reply_text("🎤 Transcribiendo...")
+        
+        # Get voice file from Telegram
+        voice = update.message.voice
+        file = await context.bot.get_file(voice.file_id)
+        
+        # Create temporary directory if it doesn't exist
+        temp_dir = "temp_audio"
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+        
+        # Download audio file
+        audio_file_path = os.path.join(temp_dir, f"voice_{voice.file_id}.ogg")
+        await file.download_to_drive(audio_file_path)
+        
+        try:
+            # Transcribe audio
+            transcribed_text = transcribe_voice(audio_file_path)
+            
+            # Edit the processing message with the result
+            await processing_msg.edit_text(f"🎤 Transcripción:\n\n{transcribed_text}")
+            
+            logging.info(f"Voice message transcribed successfully for user {update.effective_user.id}")
+        
+        finally:
+            # Delete audio file to save memory
+            if os.path.exists(audio_file_path):
+                os.remove(audio_file_path)
+                logging.info(f"Deleted temporary audio file: {audio_file_path}")
+    
+    except FileNotFoundError as e:
+        error_msg = f"❌ Modelo de Vosk no encontrado:\n{str(e)}\n\nPor favor, descarga el modelo desde: https://alphacephei.com/vosk/models"
+        await update.message.reply_text(error_msg)
+        logging.error(f"Vosk model not found: {e}")
+    
+    except ValueError as e:
+        await update.message.reply_text(f"❌ Error en el audio:\n{str(e)}")
+        logging.error(f"Audio processing error: {e}")
+    
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error al transcribir:\n{str(e)}")
+        logging.error(f"Transcription handler error: {e}", exc_info=True)
+
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token(config['TELEGRAM_TOKEN']).build()
+    
+    # Initialize bot start time
+    set_bot_start_time()
     
     # Handlers originales (con funciones del directorio functions/)
     start_handler = CommandHandler('start', start)
@@ -165,6 +243,11 @@ if __name__ == '__main__':
     # Nuevos handlers con manejo de errores
     application.add_handler(CommandHandler("debug", debug_command))
     application.add_handler(CommandHandler("myid", get_my_id))
+    application.add_handler(CommandHandler("status", status))
+    
+    # Handler para transcribir mensajes de voz
+    voice_handler = MessageHandler(filters.VOICE, handle_voice_message)
+    application.add_handler(voice_handler)
     
     logging.info("Bot iniciado correctamente")
     application.run_polling()
