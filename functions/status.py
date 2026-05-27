@@ -1,7 +1,6 @@
-import psutil
 import os
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from telegram import Update
 from telegram.ext import ContextTypes
 import subprocess
@@ -28,35 +27,92 @@ def get_bot_uptime() -> str:
     return f"{days}d {hours}h {minutes}m {seconds}s"
 
 def get_cpu_usage() -> str:
-    """Get CPU usage percentage"""
+    """Get CPU usage percentage from /proc/stat"""
     try:
-        cpu_percent = psutil.cpu_percent(interval=1)
-        return f"{cpu_percent}%"
+        with open('/proc/stat', 'r') as f:
+            line = f.readline()
+        
+        if not line.startswith('cpu '):
+            return "Error"
+        
+        # Parse CPU stats: user nice system idle iowait irq softirq steal guest guest_nice
+        tokens = line.split()
+        user = int(tokens[1])
+        nice = int(tokens[2])
+        system = int(tokens[3])
+        idle = int(tokens[4])
+        
+        total = user + nice + system + idle
+        used = total - idle
+        
+        if total == 0:
+            return "0%"
+        
+        cpu_percent = (used / total) * 100
+        return f"{cpu_percent:.1f}%"
+    
     except Exception as e:
         logging.error(f"Error getting CPU usage: {e}")
         return "Error"
 
 def get_ram_usage() -> tuple:
-    """Get RAM usage as (used_percent, used_gb, total_gb)"""
+    """Get RAM usage from /proc/meminfo"""
     try:
-        ram = psutil.virtual_memory()
-        used_gb = ram.used / (1024 ** 3)
-        total_gb = ram.total / (1024 ** 3)
-        return f"{ram.percent}%", f"{used_gb:.2f}GB", f"{total_gb:.2f}GB"
+        meminfo = {}
+        with open('/proc/meminfo', 'r') as f:
+            for line in f:
+                if ':' in line:
+                    key, value = line.split(':', 1)
+                    meminfo[key.strip()] = int(value.split()[0])
+        
+        total_kb = meminfo.get('MemTotal', 0)
+        available_kb = meminfo.get('MemAvailable', 0)
+        used_kb = total_kb - available_kb
+        
+        if total_kb == 0:
+            return "0%", "0GB", "0GB"
+        
+        percent = (used_kb / total_kb) * 100
+        used_gb = used_kb / (1024 * 1024)
+        total_gb = total_kb / (1024 * 1024)
+        
+        return f"{percent:.1f}%", f"{used_gb:.2f}GB", f"{total_gb:.2f}GB"
+    
     except Exception as e:
         logging.error(f"Error getting RAM usage: {e}")
         return "Error", "Error", "Error"
 
 def get_disk_usage() -> tuple:
-    """Get disk usage for root partition as (used_percent, used_gb, total_gb)"""
+    """Get disk usage using df command"""
     try:
-        disk = psutil.disk_usage('/')
-        used_gb = disk.used / (1024 ** 3)
-        total_gb = disk.total / (1024 ** 3)
-        return f"{disk.percent}%", f"{used_gb:.2f}GB", f"{total_gb:.2f}GB"
+        result = subprocess.run(
+            ['df', '-B1', '/'],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        
+        if result.returncode == 0:
+            lines = result.stdout.strip().split('\n')
+            if len(lines) >= 2:
+                # Parse df output
+                parts = lines[1].split()
+                total = int(parts[1])
+                used = int(parts[2])
+                
+                if total == 0:
+                    return "0%", "0GB", "0GB"
+                
+                percent = (used / total) * 100
+                used_gb = used / (1024 ** 3)
+                total_gb = total / (1024 ** 3)
+                
+                return f"{percent:.1f}%", f"{used_gb:.2f}GB", f"{total_gb:.2f}GB"
+    
     except Exception as e:
         logging.error(f"Error getting disk usage: {e}")
-        return "Error", "Error", "Error"
+    
+    return "Error", "Error", "Error"
 
 def get_raspberry_pi_temp() -> str:
     """
@@ -95,46 +151,79 @@ def get_raspberry_pi_temp() -> str:
     except Exception as e:
         logging.error(f"Error reading thermal zone: {e}")
     
-    # Fallback: try psutil (less accurate on RPi)
-    try:
-        temps = psutil.sensors_temperatures()
-        if 'cpu_thermal' in temps:
-            return f"{temps['cpu_thermal'][0].current:.1f}°C"
-        elif len(temps) > 0:
-            first_sensor = list(temps.values())[0]
-            if first_sensor:
-                return f"{first_sensor[0].current:.1f}°C"
-    except Exception as e:
-        logging.error(f"Error getting temperature from psutil: {e}")
-    
     return "N/A"
 
 def get_network_stats() -> dict:
-    """Get network interface statistics"""
+    """Get network interface statistics from /proc/net/dev"""
     try:
-        net_io = psutil.net_io_counters()
-        bytes_sent = net_io.bytes_sent / (1024 ** 2)  # Convert to MB
-        bytes_recv = net_io.bytes_recv / (1024 ** 2)  # Convert to MB
+        net_stats = {
+            'bytes_sent': 0,
+            'bytes_recv': 0,
+            'packets_sent': 0,
+            'packets_recv': 0,
+            'errors': 0,
+            'dropped': 0
+        }
+        
+        with open('/proc/net/dev', 'r') as f:
+            lines = f.readlines()[2:]  # Skip header lines
+            
+            for line in lines:
+                if ':' in line:
+                    parts = line.split(':')[1].split()
+                    if len(parts) >= 10:
+                        # Format: recv_bytes recv_packets recv_errors recv_dropped ... send_bytes send_packets ...
+                        net_stats['bytes_recv'] += int(parts[0])
+                        net_stats['packets_recv'] += int(parts[1])
+                        net_stats['errors'] += int(parts[2])
+                        net_stats['dropped'] += int(parts[3])
+                        net_stats['bytes_sent'] += int(parts[8])
+                        net_stats['packets_sent'] += int(parts[9])
+        
+        bytes_sent_mb = net_stats['bytes_sent'] / (1024 ** 2)
+        bytes_recv_mb = net_stats['bytes_recv'] / (1024 ** 2)
         
         return {
-            'sent_mb': f"{bytes_sent:.2f}MB",
-            'recv_mb': f"{bytes_recv:.2f}MB",
-            'packets_sent': net_io.packets_sent,
-            'packets_recv': net_io.packets_recv,
-            'errors': net_io.errin + net_io.errout,
-            'dropped': net_io.dropin + net_io.dropout
+            'sent_mb': f"{bytes_sent_mb:.2f}MB",
+            'recv_mb': f"{bytes_recv_mb:.2f}MB",
+            'packets_sent': net_stats['packets_sent'],
+            'packets_recv': net_stats['packets_recv'],
+            'errors': net_stats['errors'],
+            'dropped': net_stats['dropped']
         }
+    
     except Exception as e:
         logging.error(f"Error getting network stats: {e}")
         return None
 
 def get_process_count() -> dict:
-    """Get process count information"""
+    """Get process count from /proc"""
     try:
+        # Count directories in /proc that are numeric (process IDs)
+        proc_dir = '/proc'
+        total_processes = 0
+        
+        if os.path.isdir(proc_dir):
+            for item in os.listdir(proc_dir):
+                if item.isdigit():
+                    total_processes += 1
+        
+        # Approximate running count by checking /proc/stat
+        running = 0
+        try:
+            with open('/proc/stat', 'r') as f:
+                for line in f:
+                    if line.startswith('procs_running'):
+                        running = int(line.split()[1])
+                        break
+        except:
+            pass
+        
         return {
-            'total': len(psutil.pids()),
-            'running': len([p for p in psutil.pids() if psutil.Process(p).status() == psutil.STATUS_RUNNING])
+            'total': total_processes,
+            'running': running if running > 0 else "?"
         }
+    
     except Exception as e:
         logging.error(f"Error getting process count: {e}")
         return None
