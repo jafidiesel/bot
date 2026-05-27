@@ -58,13 +58,13 @@ def transcribe_voice(audio_file_path: str) -> str:
                 
                 if recognizer.AcceptWaveform(data):
                     result = json.loads(recognizer.Result())
-                    if 'result' in result:
-                        transcribed_text += " ".join([item['conf'] for item in result['result']])
-            
+                    if result.get('text'):
+                        transcribed_text += result['text'] + " "
+
             # Get final result
             final_result = json.loads(recognizer.FinalResult())
-            if 'result' in final_result:
-                transcribed_text += " ".join([item['conf'] for item in final_result['result']])
+            if final_result.get('text'):
+                transcribed_text += final_result['text']
             
             if not transcribed_text.strip():
                 raise ValueError("No speech detected in audio file")
