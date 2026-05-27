@@ -31,8 +31,19 @@ from functions.arsusd import arsusd
 from functions.arseur import arseur
 from functions.test import test
 from functions.scrape import scrape
-from functions.transcribe import transcribe_voice
 from functions.status import status, set_bot_start_time
+
+# Try to import transcription feature (optional - may fail on some systems)
+TRANSCRIBE_AVAILABLE = False
+try:
+    from functions.transcribe import transcribe_voice
+    TRANSCRIBE_AVAILABLE = True
+    logging.info("Transcription feature loaded successfully")
+except ImportError as e:
+    logging.warning(f"Transcription feature not available: {e}")
+except Exception as e:
+    logging.warning(f"Could not load transcription (Vosk issue): {e}")
+
 #import functions.weather as weather
 
 def handle_errors(func):
@@ -122,6 +133,19 @@ async def get_my_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @handle_errors
 async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handler para transcribir mensajes de voz usando Vosk"""
+    
+    if not TRANSCRIBE_AVAILABLE:
+        await update.message.reply_text(
+            "❌ Transcripción no disponible\n\n"
+            "La función de transcripción está deshabilitada en este bot.\n"
+            "Esto puede deberse a:\n"
+            "- Vosk no está instalado\n"
+            "- El modelo de Spanish no está descargado\n"
+            "- Problema de compatibilidad en tu sistema"
+        )
+        logging.warning(f"Transcription requested but not available for user {update.effective_user.id}")
+        return
+    
     try:
         # Send processing message
         processing_msg = await update.message.reply_text("🎤 Transcribiendo...")
