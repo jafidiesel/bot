@@ -179,9 +179,8 @@ async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYP
                 logging.info(f"Deleted temporary audio file: {audio_file_path}")
     
     except FileNotFoundError as e:
-        error_msg = f"❌ Modelo de Vosk no encontrado:\n{str(e)}\n\nPor favor, descarga el modelo desde: https://alphacephei.com/vosk/models"
-        await update.message.reply_text(error_msg)
-        logging.error(f"Vosk model not found: {e}")
+        await update.message.reply_text(f"❌ Dependencia faltante:\n{str(e)}")
+        logging.error(f"Missing dependency: {e}")
     
     except ValueError as e:
         await update.message.reply_text(f"❌ Error en el audio:\n{str(e)}")
