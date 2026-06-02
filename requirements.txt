@@ -5,3 +5,4 @@ datetime
 readability-lxml
 vosk
 pydub
+audioop-lts
