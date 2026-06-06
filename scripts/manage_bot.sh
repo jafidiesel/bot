@@ -6,7 +6,15 @@
 
 SERVICE_NAME="bot_script"
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
-BOT_DIR="/home/jafidiesel/git/bot"
+BOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+BOT_USER="pi"
+
+# Override BOT_USER from .env if defined
+if [ -f "${BOT_DIR}/.env" ]; then
+    LOADED_USER=$(grep -E '^USER=' "${BOT_DIR}/.env" | cut -d= -f2 | tr -d '"' | tr -d "'")
+    [ -n "$LOADED_USER" ] && BOT_USER="$LOADED_USER"
+fi
+
 VENV_DIR="${BOT_DIR}/venv"
 PYTHON="${VENV_DIR}/bin/python3"
 
@@ -41,7 +49,6 @@ check_root "install"
 check_bot_dir
 check_env_file
 
-```
 print_info "Creando entorno virtual en $VENV_DIR ..."
 python3 -m venv "$VENV_DIR"
 if [ $? -ne 0 ]; then
@@ -62,7 +69,6 @@ print_ok "Dependencias instaladas."
 
 print_info "Registrando servicio systemd..."
 cat > "$SERVICE_FILE" << EOF
-```
 
 [Unit]
 Description=Bot de Telegram - Python
@@ -71,8 +77,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=jafidiesel
-Group=jafidiesel
+User=${BOT_USER}
+Group=${BOT_USER}
 WorkingDirectory=${BOT_DIR}
 ExecStart=${PYTHON} ${BOT_DIR}/bot.py
 Restart=always
@@ -85,7 +91,6 @@ Environment=PYTHONUNBUFFERED=1
 WantedBy=multi-user.target
 EOF
 
-```
 systemctl daemon-reload
 systemctl enable "$SERVICE_NAME"
 systemctl start "$SERVICE_NAME"
@@ -98,7 +103,6 @@ else
     print_err "El servicio no arranco correctamente."
     print_info "Revisa los logs con: sudo ./manage_bot.sh logs"
 fi
-```
 
 }
 
