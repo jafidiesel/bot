@@ -1,5 +1,5 @@
 #!/bin/bash
-BOT_DIR="/home/jafidiesel/git/bot"
+BOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 VENV_DIR="${BOT_DIR}/venv"
 SERVICE_NAME="bot_script"
 
