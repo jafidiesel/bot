@@ -44,10 +44,35 @@ exit 1
 fi
 }
 
+check_sys_deps() {
+local missing=()
+local pkgs=("libxslt1.1" "ffmpeg" "flac")
+
+for pkg in "${pkgs[@]}"; do
+    if ! dpkg -s "$pkg" &>/dev/null; then
+        missing+=("$pkg")
+    fi
+done
+
+if [ ${#missing[@]} -gt 0 ]; then
+    print_info "Instalando dependencias del sistema: ${missing[*]}"
+    apt-get install -y "${missing[@]}"
+    if [ $? -ne 0 ]; then
+        print_err "No se pudieron instalar: ${missing[*]}"
+        print_info "Instalalas manualmente: sudo apt install ${missing[*]}"
+        exit 1
+    fi
+    print_ok "Dependencias del sistema instaladas."
+else
+    print_ok "Dependencias del sistema OK (libxslt1.1, ffmpeg, flac)."
+fi
+}
+
 cmd_install() {
 check_root "install"
 check_bot_dir
 check_env_file
+check_sys_deps
 
 print_info "Creando entorno virtual en $VENV_DIR ..."
 python3 -m venv "$VENV_DIR"
