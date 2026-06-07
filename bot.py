@@ -165,11 +165,14 @@ async def handle_voice_message(update: Update, context: ContextTypes.DEFAULT_TYP
         
         try:
             # Transcribe audio
-            transcribed_text = transcribe_voice(audio_file_path)
-            
-            # Edit the processing message with the result
-            await processing_msg.edit_text(f"🎤 Transcripción:\n\n{transcribed_text}")
-            
+            transcribed_text, stats = transcribe_voice(audio_file_path)
+
+            stats_line = (
+                f"ffmpeg {stats['ffmpeg_s']}s | api {stats['api_s']}s | "
+                f"total {stats['total_s']}s | cpu {stats['cpu_s']}s | mem {stats['mem_mb']}MB"
+            )
+            await processing_msg.edit_text(f"🎤 Transcripción:\n\n{transcribed_text}\n\n`{stats_line}`", parse_mode='Markdown')
+
             logging.info(f"Voice message transcribed successfully for user {update.effective_user.id}")
         
         finally:
