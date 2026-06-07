@@ -44,7 +44,7 @@ except ImportError as e:
 except Exception as e:
     logging.warning(f"Could not load transcription (Vosk issue): {e}")
 
-#import functions.weather as weather
+import functions.weather as weather
 
 def handle_errors(func):
     """Decorator para manejar errores y enviarlos al usuario"""
@@ -234,13 +234,8 @@ if __name__ == '__main__':
     scrape_handler = CommandHandler('scrape', scrape)
     application.add_handler(scrape_handler)
 
-    # Handlers para funciones de weather
-    #weather_command_handler = CommandHandler('clima', weather.weather_command)
-    #application.add_handler(weather_command_handler)
-
-    # Agregar pronóstico del tiempo
-    #weather_command_handler = CommandHandler('pronostico', weather.forecast_command)
-    #application.add_handler(weather_command_handler)
+    application.add_handler(CommandHandler('clima', weather.weather_command))
+    application.add_handler(CommandHandler('pronostico', weather.forecast_command))
 
     # Nuevos handlers con manejo de errores
     application.add_handler(CommandHandler("debug", debug_command))
