@@ -235,7 +235,6 @@ if __name__ == '__main__':
     application.add_handler(scrape_handler)
 
     application.add_handler(CommandHandler('clima', weather.weather_command))
-    application.add_handler(CommandHandler('pronostico', weather.forecast_command))
 
     # Nuevos handlers con manejo de errores
     application.add_handler(CommandHandler("debug", debug_command))
