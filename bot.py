@@ -45,6 +45,7 @@ except Exception as e:
     logging.warning(f"Could not load transcription (Vosk issue): {e}")
 
 import functions.weather as weather
+from functions.metrics import track_resources
 
 def handle_errors(func):
     """Decorator para manejar errores y enviarlos al usuario"""
@@ -200,46 +201,24 @@ if __name__ == '__main__':
     # Initialize bot start time
     set_bot_start_time()
     
-    # Handlers originales (con funciones del directorio functions/)
-    start_handler = CommandHandler('start', start)
-    application.add_handler(start_handler)
+    def cmd(command, func):
+        application.add_handler(CommandHandler(command, track_resources(func)))
 
-    bitso_handler = CommandHandler('bitso', bitso)
-    application.add_handler(bitso_handler)
-
-    dolar_handler = CommandHandler('dolar', dolar)
-    application.add_handler(dolar_handler)
-
-    euro_handler = CommandHandler('euro', euro)
-    application.add_handler(euro_handler)
-
-    temp_handler = CommandHandler('temp', temp)
-    application.add_handler(temp_handler)
-
-    usdars_handler = CommandHandler('usdars', usdars)
-    application.add_handler(usdars_handler)
-
-    eurars_handler = CommandHandler('eurars', eurars)
-    application.add_handler(eurars_handler)
-
-    arsusd_handler = CommandHandler('arsusd', arsusd)
-    application.add_handler(arsusd_handler)
-
-    arseur_handler = CommandHandler('arseur', arseur)
-    application.add_handler(arseur_handler)
-
-    test_handler = CommandHandler('test', test)
-    application.add_handler(test_handler)
-
-    scrape_handler = CommandHandler('scrape', scrape)
-    application.add_handler(scrape_handler)
-
-    application.add_handler(CommandHandler('clima', weather.weather_command))
-
-    # Nuevos handlers con manejo de errores
-    application.add_handler(CommandHandler("debug", debug_command))
-    application.add_handler(CommandHandler("myid", get_my_id))
-    application.add_handler(CommandHandler("status", status))
+    cmd('start',    start)
+    cmd('bitso',    bitso)
+    cmd('dolar',    dolar)
+    cmd('euro',     euro)
+    cmd('temp',     temp)
+    cmd('usdars',   usdars)
+    cmd('eurars',   eurars)
+    cmd('arsusd',   arsusd)
+    cmd('arseur',   arseur)
+    cmd('test',     test)
+    cmd('scrape',   scrape)
+    cmd('clima',    weather.weather_command)
+    cmd('debug',    debug_command)
+    cmd('myid',     get_my_id)
+    cmd('status',   status)
     
     # Handler para transcribir mensajes de voz
     voice_handler = MessageHandler(filters.VOICE, handle_voice_message)
