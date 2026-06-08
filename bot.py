@@ -1,4 +1,4 @@
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CallbackQueryHandler, CommandHandler, MessageHandler, filters
 from telegram import Update
 from telegram.ext import ContextTypes
 from dotenv import dotenv_values
@@ -44,7 +44,9 @@ except ImportError as e:
 except Exception as e:
     logging.warning(f"Could not load transcription (Vosk issue): {e}")
 
-#import functions.weather as weather
+import functions.weather as weather
+from functions.news import news_command, news_page_callback
+from functions.metrics import track_resources
 
 def handle_errors(func):
     """Decorator para manejar errores y enviarlos al usuario"""
@@ -234,18 +236,13 @@ if __name__ == '__main__':
     scrape_handler = CommandHandler('scrape', scrape)
     application.add_handler(scrape_handler)
 
-    # Handlers para funciones de weather
-    #weather_command_handler = CommandHandler('clima', weather.weather_command)
-    #application.add_handler(weather_command_handler)
+    application.add_handler(CommandHandler('clima', track_resources(weather.weather_command)))
+    application.add_handler(CommandHandler('news',  track_resources(news_command)))
+    application.add_handler(CallbackQueryHandler(news_page_callback, pattern='^news_page:'))
 
-    # Agregar pronóstico del tiempo
-    #weather_command_handler = CommandHandler('pronostico', weather.forecast_command)
-    #application.add_handler(weather_command_handler)
-
-    # Nuevos handlers con manejo de errores
-    application.add_handler(CommandHandler("debug", debug_command))
-    application.add_handler(CommandHandler("myid", get_my_id))
-    application.add_handler(CommandHandler("status", status))
+    application.add_handler(CommandHandler("debug",  track_resources(debug_command)))
+    application.add_handler(CommandHandler("myid",   track_resources(get_my_id)))
+    application.add_handler(CommandHandler("status", track_resources(status)))
     
     # Handler para transcribir mensajes de voz
     voice_handler = MessageHandler(filters.VOICE, handle_voice_message)
