@@ -1,6 +1,5 @@
 import resource
 import time
-import logging
 from functools import wraps
 
 
@@ -15,52 +14,87 @@ def _stats_footer(t_start, ru_before):
     return f"\n\n⏱ {total_s}s  cpu {cpu_s}s  mem {mem_mb}MB"
 
 
+class _MessageProxy:
+    __slots__ = ('_msg', '_calls')
+
+    def __init__(self, msg, calls):
+        object.__setattr__(self, '_msg', msg)
+        object.__setattr__(self, '_calls', calls)
+
+    async def reply_text(self, *args, **kwargs):
+        self._calls.append(('reply', list(args), dict(kwargs)))
+
+    def __getattr__(self, name):
+        return getattr(self._msg, name)
+
+
+class _BotProxy:
+    __slots__ = ('_bot', '_calls')
+
+    def __init__(self, bot, calls):
+        object.__setattr__(self, '_bot', bot)
+        object.__setattr__(self, '_calls', calls)
+
+    async def send_message(self, *args, **kwargs):
+        self._calls.append(('send', list(args), dict(kwargs)))
+
+    def __getattr__(self, name):
+        return getattr(self._bot, name)
+
+
+class _UpdateProxy:
+    __slots__ = ('_update', '_msg_proxy')
+
+    def __init__(self, update, calls):
+        object.__setattr__(self, '_update', update)
+        object.__setattr__(self, '_msg_proxy', _MessageProxy(update.message, calls))
+
+    @property
+    def message(self):
+        return self._msg_proxy
+
+    def __getattr__(self, name):
+        return getattr(self._update, name)
+
+
+class _ContextProxy:
+    __slots__ = ('_ctx', '_bot_proxy')
+
+    def __init__(self, ctx, calls):
+        object.__setattr__(self, '_ctx', ctx)
+        object.__setattr__(self, '_bot_proxy', _BotProxy(ctx.bot, calls))
+
+    @property
+    def bot(self):
+        return self._bot_proxy
+
+    def __getattr__(self, name):
+        return getattr(self._ctx, name)
+
+
 def track_resources(func):
-    """Decorator que mide tiempo, CPU y memoria de un handler y lo agrega al final del último mensaje."""
+    """Mide tiempo, CPU y memoria de un handler y lo agrega al final del último mensaje."""
     @wraps(func)
     async def wrapper(update, context):
         ru_before = resource.getrusage(resource.RUSAGE_SELF)
         t_start = time.perf_counter()
         calls = []
 
-        orig_reply = update.message.reply_text
-        orig_send = context.bot.send_message
+        update_p = _UpdateProxy(update, calls)
+        context_p = _ContextProxy(context, calls)
 
-        async def buf_reply(*args, **kwargs):
-            calls.append(('reply', list(args), dict(kwargs)))
+        await func(update_p, context_p)
 
-        async def buf_send(*args, **kwargs):
-            calls.append(('send', list(args), dict(kwargs)))
-
-        patched = False
-        try:
-            update.message.reply_text = buf_reply
-            context.bot.send_message = buf_send
-            patched = True
-        except (AttributeError, TypeError):
-            logging.warning(f"track_resources: no se pudo parchear métodos para {func.__name__}")
-
-        try:
-            await func(update, context)
-        finally:
-            if patched:
-                try:
-                    update.message.reply_text = orig_reply
-                except Exception:
-                    pass
-                try:
-                    context.bot.send_message = orig_send
-                except Exception:
-                    pass
-
-        if not patched or not calls:
+        if not calls:
             return
 
         footer = _stats_footer(t_start, ru_before)
 
+        orig_reply = update.message.reply_text
+        orig_send = context.bot.send_message
+
         for i, (kind, args, kwargs) in enumerate(calls):
-            is_last = (i == len(calls) - 1)
-            if is_last:
+            if i == len(calls) - 1:
                 if kind == 'reply':
                     if args:
                         args[0] = str(args[0]) + footer
