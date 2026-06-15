@@ -8,7 +8,7 @@ from functools import wraps
 
 config = dotenv_values(".env")
 OPENWEATHER_API_KEY = config.get('OPENWEATHER_API_KEY')
-OPENWEATHER_BASE_URL = config.get('OPENWEATHER_BASE_URL', 'https://api.openweathermap.org/data/2.5')
+OPENWEATHER_BASE_URL = config.get('OPENWEATHER_BASE_URL')
 
 WEATHER_EMOJIS = {
     'Clear':         '☀️',

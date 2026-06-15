@@ -202,9 +202,8 @@ if __name__ == '__main__':
     # Initialize bot start time
     set_bot_start_time()
     
-    # Handlers originales (con funciones del directorio functions/)
-    start_handler = CommandHandler('start', start)
-    application.add_handler(start_handler)
+    def cmd(command, func):
+        application.add_handler(CommandHandler(command, track_resources(func)))
 
     bitso_handler = CommandHandler('bitso', bitso)
     application.add_handler(bitso_handler)
