@@ -1,4 +1,4 @@
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CallbackQueryHandler, CommandHandler, MessageHandler, filters
 from telegram import Update
 from telegram.ext import ContextTypes
 from dotenv import dotenv_values
@@ -45,6 +45,7 @@ except Exception as e:
     logging.warning(f"Could not load transcription (Vosk issue): {e}")
 
 import functions.weather as weather
+from functions.news import news_command, news_page_callback
 from functions.metrics import track_resources
 
 def handle_errors(func):
@@ -204,21 +205,43 @@ if __name__ == '__main__':
     def cmd(command, func):
         application.add_handler(CommandHandler(command, track_resources(func)))
 
-    cmd('start',    start)
-    cmd('bitso',    bitso)
-    cmd('dolar',    dolar)
-    cmd('euro',     euro)
-    cmd('temp',     temp)
-    cmd('usdars',   usdars)
-    cmd('eurars',   eurars)
-    cmd('arsusd',   arsusd)
-    cmd('arseur',   arseur)
-    cmd('test',     test)
-    cmd('scrape',   scrape)
-    cmd('clima',    weather.weather_command)
-    cmd('debug',    debug_command)
-    cmd('myid',     get_my_id)
-    cmd('status',   status)
+    bitso_handler = CommandHandler('bitso', bitso)
+    application.add_handler(bitso_handler)
+
+    dolar_handler = CommandHandler('dolar', dolar)
+    application.add_handler(dolar_handler)
+
+    euro_handler = CommandHandler('euro', euro)
+    application.add_handler(euro_handler)
+
+    temp_handler = CommandHandler('temp', temp)
+    application.add_handler(temp_handler)
+
+    usdars_handler = CommandHandler('usdars', usdars)
+    application.add_handler(usdars_handler)
+
+    eurars_handler = CommandHandler('eurars', eurars)
+    application.add_handler(eurars_handler)
+
+    arsusd_handler = CommandHandler('arsusd', arsusd)
+    application.add_handler(arsusd_handler)
+
+    arseur_handler = CommandHandler('arseur', arseur)
+    application.add_handler(arseur_handler)
+
+    test_handler = CommandHandler('test', test)
+    application.add_handler(test_handler)
+
+    scrape_handler = CommandHandler('scrape', scrape)
+    application.add_handler(scrape_handler)
+
+    application.add_handler(CommandHandler('clima', track_resources(weather.weather_command)))
+    application.add_handler(CommandHandler('news',  track_resources(news_command)))
+    application.add_handler(CallbackQueryHandler(news_page_callback, pattern='^news_page:'))
+
+    application.add_handler(CommandHandler("debug",  track_resources(debug_command)))
+    application.add_handler(CommandHandler("myid",   track_resources(get_my_id)))
+    application.add_handler(CommandHandler("status", track_resources(status)))
     
     # Handler para transcribir mensajes de voz
     voice_handler = MessageHandler(filters.VOICE, handle_voice_message)

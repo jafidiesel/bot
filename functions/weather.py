@@ -28,6 +28,7 @@ WEATHER_EMOJIS = {
     'Tornado':       '🌪️',
 }
 
+
 def handle_errors(func):
     @wraps(func)
     async def wrapper(update, context):
@@ -37,10 +38,11 @@ def handle_errors(func):
             error_msg = f"❌ Error en {func.__name__}: {str(e)}"
             try:
                 await update.message.reply_text(error_msg)
-            except:
+            except Exception:
                 pass
             logging.error(f"Error in {func.__name__}: {e}", exc_info=True)
     return wrapper
+
 
 def safe_api_call(url: str, params: dict, timeout: int = 10):
     try:
@@ -61,8 +63,10 @@ def safe_api_call(url: str, params: dict, timeout: int = 10):
     except Exception as e:
         return None, f"❌ Error inesperado: {str(e)}"
 
+
 def get_weather_emoji(weather_main: str) -> str:
     return WEATHER_EMOJIS.get(weather_main, '🌤️')
+
 
 @handle_errors
 async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -73,7 +77,7 @@ async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text(
             "🌤️ Uso: /clima <ciudad>\n"
-            "Ejemplo: /clima Mendoza"
+            "Ejemplo: /clima Buenos Aires"
         )
         return
 
@@ -118,4 +122,3 @@ async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except KeyError as e:
         await update.message.reply_text(f"❌ Error procesando datos del clima: campo '{e}' no encontrado")
-
