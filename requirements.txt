@@ -4,3 +4,4 @@ requests
 datetime
 readability-lxml
 SpeechRecognition
+adafruit-blinka
