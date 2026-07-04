@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# Necesario para bot_script.service
 # Definir la ruta del proyecto
 PROJECT_DIR="/home/pi/git/bot"
 
@@ -27,3 +27,4 @@ pip3 install -r requirements.txt
 
 # Ejecutar el bot
 python3 bot.py
+python3 lcd.py
