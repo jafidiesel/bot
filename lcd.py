@@ -85,4 +85,6 @@ while True:
     # combine both lines into one update to the display
     lcd.message = lcd_line_1 + lcd_line_2
 
+    print(lcd_line_1 + lcd_line_2)
+
     sleep(1)
