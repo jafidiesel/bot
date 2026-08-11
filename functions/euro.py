@@ -6,6 +6,8 @@ from datetime import datetime
 import logging
 from functools import wraps
 
+from functions.convert import handle_conversion
+
 config = dotenv_values(".env")
 EURO_API_URL = config.get('EURO_API_URL')
 
@@ -41,6 +43,10 @@ async def safe_api_call(url: str, timeout: int = 10):
 
 @handle_errors
 async def euro(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if context.args:
+        await handle_conversion(update, context, source='EUR', targets=['ARS', 'USD', 'BRL', 'CLP'], command_name='eur')
+        return
+
     if not EURO_API_URL:
         await context.bot.send_message(
             chat_id=update.effective_chat.id,

@@ -18,8 +18,8 @@ Este bot de Telegram proporciona información financiera (dólar, Bitso, convers
 
 ### ✅ Comandos Mejorados
 - `/start` - Menú principal mejorado
-- `/dolar` - Información del dólar con manejo de errores
-- `/euro` - Información del euro con manejo de errores
+- `/usd` - Información del dólar con manejo de errores
+- `/eur` - Información del euro con manejo de errores
 - `/bitso` - Datos de Bitso con validación robusta
 - `/debug` - Activar/desactivar modo debug (solo administradores)
 - `/myid` - Obtener tu ID de usuario de Telegram

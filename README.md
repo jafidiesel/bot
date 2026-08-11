@@ -17,7 +17,7 @@ The deps currently are:
 for more info about the instalation and to do a manual setup go to build_run.sh
 
 Available quote commands:
-- /dolar
-- /euro
+- /usd
+- /eur
 
 Also docker file it's outdated :p
