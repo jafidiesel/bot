@@ -27,6 +27,7 @@ from functions.euro import euro
 from functions.ars import ars
 from functions.clp import clp
 from functions.brl import brl
+from functions.awg import awg
 from functions.temp import temp
 from functions.usdars import usdars
 from functions.eurars import eurars
@@ -225,6 +226,9 @@ if __name__ == '__main__':
 
     brl_handler = CommandHandler('brl', brl)
     application.add_handler(brl_handler)
+
+    awg_handler = CommandHandler('awg', awg)
+    application.add_handler(awg_handler)
 
     temp_handler = CommandHandler('temp', temp)
     application.add_handler(temp_handler)
