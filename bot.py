@@ -25,6 +25,8 @@ from functions.bitso import bitso
 from functions.dolar import dolar
 from functions.euro import euro
 from functions.ars import ars
+from functions.clp import clp
+from functions.brl import brl
 from functions.temp import temp
 from functions.usdars import usdars
 from functions.eurars import eurars
@@ -217,6 +219,12 @@ if __name__ == '__main__':
 
     ars_handler = CommandHandler('ars', ars)
     application.add_handler(ars_handler)
+
+    clp_handler = CommandHandler('clp', clp)
+    application.add_handler(clp_handler)
+
+    brl_handler = CommandHandler('brl', brl)
+    application.add_handler(brl_handler)
 
     temp_handler = CommandHandler('temp', temp)
     application.add_handler(temp_handler)

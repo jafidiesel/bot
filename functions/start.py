@@ -29,6 +29,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
              "🔹 /eur - Precio del euro\n"
              "🔹 /eur <monto> - Convertir EUR a ARS/USD/BRL/CLP\n"
              "🔹 /ars <monto> - Convertir ARS a USD/EUR/BRL/CLP\n"
+             "🔹 /clp <monto> - Convertir CLP a ARS/USD/EUR/BRL\n"
+             "🔹 /brl <monto> - Convertir BRL a ARS/USD/EUR/CLP\n"
              "🔹 /bitso - Datos de Bitso\n"
              "🔹 /temp - Temperatura\n"
              "🔹 /test - Comando de prueba\n"
