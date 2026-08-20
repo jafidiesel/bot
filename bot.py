@@ -24,6 +24,10 @@ from functions.start import start
 from functions.bitso import bitso
 from functions.dolar import dolar
 from functions.euro import euro
+from functions.ars import ars
+from functions.clp import clp
+from functions.brl import brl
+from functions.awg import awg
 from functions.temp import temp
 from functions.usdars import usdars
 from functions.eurars import eurars
@@ -208,26 +212,26 @@ if __name__ == '__main__':
     bitso_handler = CommandHandler('bitso', bitso)
     application.add_handler(bitso_handler)
 
-    dolar_handler = CommandHandler('dolar', dolar)
+    dolar_handler = CommandHandler('usd', dolar)
     application.add_handler(dolar_handler)
 
-    euro_handler = CommandHandler('euro', euro)
+    euro_handler = CommandHandler('eur', euro)
     application.add_handler(euro_handler)
+
+    ars_handler = CommandHandler('ars', ars)
+    application.add_handler(ars_handler)
+
+    clp_handler = CommandHandler('clp', clp)
+    application.add_handler(clp_handler)
+
+    brl_handler = CommandHandler('brl', brl)
+    application.add_handler(brl_handler)
+
+    awg_handler = CommandHandler('awg', awg)
+    application.add_handler(awg_handler)
 
     temp_handler = CommandHandler('temp', temp)
     application.add_handler(temp_handler)
-
-    usdars_handler = CommandHandler('usdars', usdars)
-    application.add_handler(usdars_handler)
-
-    eurars_handler = CommandHandler('eurars', eurars)
-    application.add_handler(eurars_handler)
-
-    arsusd_handler = CommandHandler('arsusd', arsusd)
-    application.add_handler(arsusd_handler)
-
-    arseur_handler = CommandHandler('arseur', arseur)
-    application.add_handler(arseur_handler)
 
     test_handler = CommandHandler('test', test)
     application.add_handler(test_handler)
