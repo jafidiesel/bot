@@ -3,11 +3,14 @@ from telegram.ext import ContextTypes
 import subprocess
 import json
 import requests
+from dotenv import dotenv_values
+
+config = dotenv_values(".env")
 
 async def ip(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         user_id = update.effective_user.id
-        authorized_users = [71870097]
+        authorized_users = [config.get('AUTH_USER')]
         if user_id not in authorized_users:
             await update.message.reply_text("❌ No autorizado para usar este comando")
             return

@@ -121,7 +121,7 @@ async def debug_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     
     # Lista de usuarios autorizados
-    authorized_users = [71870097]
+    authorized_users = [config.get('AUTH_USER')]
     if user_id not in authorized_users:
         await update.message.reply_text("❌ No autorizado para usar este comando")
         return
