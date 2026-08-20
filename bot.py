@@ -36,6 +36,7 @@ from functions.arseur import arseur
 from functions.test import test
 from functions.scrape import scrape
 from functions.status import status, set_bot_start_time
+from functions.ip import ip
 
 # Try to import transcription feature (optional - may fail on some systems)
 TRANSCRIBE_AVAILABLE = False
@@ -120,8 +121,8 @@ async def debug_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     
     # Lista de usuarios autorizados
-    authorized_users = [71870097]
-    if user_id not in authorized_users:
+    authorized_users = [config.get('AUTH_USER')]
+    if str(user_id) not in authorized_users:
         await update.message.reply_text("❌ No autorizado para usar este comando")
         return
     
@@ -246,6 +247,7 @@ if __name__ == '__main__':
     application.add_handler(CommandHandler("debug",  track_resources(debug_command)))
     application.add_handler(CommandHandler("myid",   track_resources(get_my_id)))
     application.add_handler(CommandHandler("status", track_resources(status)))
+    application.add_handler(CommandHandler("ip", track_resources(ip)))
     
     # Handler para transcribir mensajes de voz
     voice_handler = MessageHandler(filters.VOICE, handle_voice_message)

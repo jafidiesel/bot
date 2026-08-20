@@ -32,6 +32,7 @@ TELEGRAM_TOKEN=tu_token_de_botfather_aqui
 DOLLAR_API_URL=https://api.ejemplo.com/dolar
 EURO_API_URL=https://dolarapi.com/v1/cotizaciones/eur
 DOLLAR_BITSO_URL=https://api.bitso.com/v3/ticker
+AUTH_USER=123456789
 ```
 
 ### 2. Configurar Usuario Autorizado

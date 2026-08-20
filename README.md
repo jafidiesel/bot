@@ -6,6 +6,7 @@ This bots it's ment to run on linux with pyhton3 and pip3
     - your DOLLAR_API_URL
     - your EURO_API_URL
     - your DOLLAR_BITSO_URL ticker
+    - AUTH_USER value
 2. You must run build_run.sh in order to create the venv, install the deps and to put the bot to run!
 3. on the next runs you can just use run.sh
 
