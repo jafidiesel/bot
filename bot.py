@@ -247,7 +247,7 @@ if __name__ == '__main__':
     application.add_handler(CommandHandler("debug",  track_resources(debug_command)))
     application.add_handler(CommandHandler("myid",   track_resources(get_my_id)))
     application.add_handler(CommandHandler("status", track_resources(status)))
-    application.add_handler(CommandHandler("ip", track_resources(status)))
+    application.add_handler(CommandHandler("ip", track_resources(ip)))
     
     # Handler para transcribir mensajes de voz
     voice_handler = MessageHandler(filters.VOICE, handle_voice_message)
