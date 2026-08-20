@@ -11,7 +11,7 @@ async def ip(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         user_id = update.effective_user.id
         authorized_users = [config.get('AUTH_USER')]
-        if user_id not in authorized_users:
+        if str(user_id) not in authorized_users:
             await update.message.reply_text("❌ No autorizado para usar este comando")
             return
 
